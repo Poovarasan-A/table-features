@@ -1,10 +1,12 @@
 /* eslint-disable react/prop-types */
-import { useRef, useState } from "react";
+import { useState } from "react";
 import { FaSort } from "react-icons/fa";
 import * as XLSX from "xlsx";
 import { jsPDF } from "jspdf";
 import "jspdf-autotable";
-import PrintTable from "./components/PrintTable";
+import { RiFileExcel2Fill } from "react-icons/ri";
+import { BsFillFileEarmarkPdfFill, BsFillPrinterFill } from "react-icons/bs";
+import { MdPrint } from "react-icons/md";
 
 const UserTable = ({ users }) => {
   const [currentPage, setCurrentPage] = useState(1);
@@ -12,16 +14,6 @@ const UserTable = ({ users }) => {
   const [sortField, setSortField] = useState("");
   const [sortOrder, setSortOrder] = useState("asc");
   const [searchQuery, setSearchQuery] = useState("");
-  const componentRef = useRef();
-
-  //   useEffect(() => {
-  //     // This will log the current value of the ref once it's attached
-  //     console.log("Component ref:", componentRef.current);
-  //   }, [componentRef]);
-
-  //   const handlePrint = useReactToPrint({
-  //     content: () => componentRef.current,
-  //   });
 
   // Filtered users based on search query
   const filteredUsers = users.filter(
@@ -81,40 +73,64 @@ const UserTable = ({ users }) => {
     doc.save("visible_users.pdf");
   };
 
+  // Print PDF
+  const printPDF = () => {
+    const doc = new jsPDF();
+    const columns = ["Name", "Email", "Phone"];
+    const rows = currentUsers.map((user) => [
+      user.name,
+      user.email,
+      user.phone,
+    ]);
+    doc.autoTable({
+      head: [columns],
+      body: rows,
+    });
+
+    const pdfOutput = doc.output("blob");
+    const pdfURL = URL.createObjectURL(pdfOutput);
+
+    // Open the PDF in a new tab
+    const newWindow = window.open(pdfURL);
+    if (newWindow) {
+      newWindow.addEventListener("load", () => {
+        newWindow.print();
+      });
+    }
+  };
+
   return (
     <div className="container mx-auto py-4 px-20">
-      <div className="flex justify-between items-center my-4">
+      <div className="flex justify-between items-center my-8">
         {/* Search Filter */}
         <input
           type="text"
           placeholder="Search by name, email or phone..."
-          className="mb-4 p-2 border-2 border-gray-300 rounded w-[25rem]"
+          className=" p-2 border-2 border-gray-300 rounded w-[25rem]"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
         />
-        <button
-          onClick={exportToExcel}
-          className="bg-blue-500 text-white p-2 rounded"
-        >
-          Export to Excel
-        </button>
-        <button
-          onClick={exportToPDF}
-          className="bg-red-500 text-white p-2 rounded"
-        >
-          Export to PDF
-        </button>
-
-        {/* //Print Button
-        <button
-          onClick={handlePrint}
-          className="bg-gray-500 text-white p-2 rounded"
-        >
-          Print
-        </button> */}
-        <PrintTable data={currentUsers} title={"User Data"} />
 
         <div className="flex justify-around items-center gap-10">
+          <button
+            onClick={exportToExcel}
+            className="rounded-full bg-blue-500/20 hover:bg-blue-500/30 text-white p-2.5"
+          >
+            <RiFileExcel2Fill className="text-blue-500 text-2xl" />
+          </button>
+          <button
+            onClick={exportToPDF}
+            className=" bg-red-500/20 hover:bg-red-500/30 text-white p-2.5 rounded-full"
+          >
+            <BsFillFileEarmarkPdfFill className="text-red-500 text-2xl" />
+          </button>
+
+          <button
+            onClick={printPDF}
+            className=" bg-green-500/20 hover:bg-green-500/30 text-white p-2.5 rounded-full"
+          >
+            <MdPrint className="text-green-500 text-2xl" />
+          </button>
           <div>
             Rows per page:
             <select
@@ -127,12 +143,15 @@ const UserTable = ({ users }) => {
               <option value={20}>20</option>
             </select>
           </div>
-          <p>Total Users: {totalUsers}</p>
+          <p className="font-semibold flex items-center justify-center gap-2 border-2 border-black/20 pl-3">
+            Total Users:
+            <span className="bg-black text-white py-1 px-2">{totalUsers}</span>
+          </p>
         </div>
       </div>
 
       {/* Table */}
-      <div ref={componentRef}>
+      <div>
         <table className="min-w-full table-auto border-collapse border border-gray-200">
           <thead>
             <tr>
@@ -140,13 +159,13 @@ const UserTable = ({ users }) => {
                 className="px-4 py-2 border bg-gray-100 cursor-pointer"
                 onClick={() => handleSort("name")}
               >
-                Name <FaSort />
+                Name <FaSort className="text-gray-400" />
               </th>
               <th
                 className="px-4 py-2 border bg-gray-100 cursor-pointer"
                 onClick={() => handleSort("email")}
               >
-                Email <FaSort />
+                Email <FaSort className="text-gray-400" />
               </th>
               <th className="px-4 py-2 border bg-gray-100">Phone Number</th>
             </tr>

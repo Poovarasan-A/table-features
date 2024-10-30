@@ -1,16 +1,14 @@
+// PrintTable.js
 import React from "react";
 
 const PrintTable = ({ data, title }) => {
   const printTable = () => {
-    const originalContent = document.body.innerHTML; // Save original content
+    const printWindow = window.open("", "_blank");
     const printContent = `
       <html>
         <head>
           <title>${title}</title>
           <style>
-            body {
-              font-family: Arial, sans-serif;
-            }
             table {
               width: 100%;
               border-collapse: collapse;
@@ -22,10 +20,6 @@ const PrintTable = ({ data, title }) => {
             }
             th {
               background-color: #000;
-              color: white;
-            }
-            h1 {
-              text-align: center;
             }
           </style>
         </head>
@@ -57,19 +51,11 @@ const PrintTable = ({ data, title }) => {
       </html>
     `;
 
-    // Create a new div to hold the print content
-    const printWindow = document.createElement("div");
-    printWindow.innerHTML = printContent;
-
-    // Hide all other content
-    document.body.innerHTML = ""; // Clear the body content
-    document.body.appendChild(printWindow); // Append print content
-
-    // Print the content
-    window.print();
-
-    // Restore the original content
-    document.body.innerHTML = originalContent;
+    printWindow.document.write(printContent);
+    printWindow.document.close();
+    printWindow.focus();
+    printWindow.print();
+    printWindow.close();
   };
 
   return (
